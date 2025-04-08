@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model chat_entries {
+  id             String        @id @unique
+  question       String
+  answer         String
+  conversationId String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime
+  conversations  conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model conversations {
+  id           String         @id @unique
+  userId       String
+  documentId   String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  chat_entries chat_entries[]
+  documents    documents      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  users        users          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model documents {
+  id               String          @id @unique
+  fileName         String
+  content          String?
+  contentEmbedding Bytes?
+  userId           String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  injestionStatus  InjestionStatus @default(PENDING)
+  s3BucketKey      String
+  s3BucketLocation String
+  conversations    conversations?
+  users            users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model users {
+  id               String          @id @unique
+  name             String
+  email            String          @unique
+  passwordHash     String
+  role             UserRole
+  lastLogin        DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  refreshTokenHash String?
+  blocked          Boolean         @default(false)
+  conversations    conversations[]
+  documents        documents[]
+}
+
+enum InjestionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
