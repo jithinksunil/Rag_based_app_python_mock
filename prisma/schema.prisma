@@ -36,7 +36,7 @@ model documents {
   userId           String
   createdAt        DateTime        @default(now())
   updatedAt        DateTime
-  injestionStatus  InjestionStatus @default(PENDING)
+  injestionStatus  InjestionStatus @default(NOT_STARTED)
   s3BucketKey      String
   s3BucketLocation String
   conversations    conversations?
@@ -62,6 +62,7 @@ enum InjestionStatus {
   PENDING
   COMPLETED
   FAILED
+  NOT_STARTED
 }
 
 enum UserRole {
